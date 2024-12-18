@@ -1,0 +1,42 @@
+package com.example.sanitarytracker.controller;
+
+import com.example.sanitarytracker.model.SanitaryItem;
+import com.example.sanitarytracker.repository.SanitaryItemRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/sanitary-items")
+@CrossOrigin(origins = "*")
+public class SanitaryItemController {
+
+    @Autowired
+    private SanitaryItemRepository repository;
+
+    @GetMapping
+    public List<SanitaryItem> getAllItems() {
+        return repository.findAll();
+    }
+
+    @PostMapping
+    public SanitaryItem addItem(@RequestBody SanitaryItem item) {
+        return repository.save(item);
+    }
+
+    @PutMapping("/{id}")
+    public SanitaryItem updateItem(@PathVariable Long id, @RequestBody SanitaryItem item) {
+        return repository.findById(id).map(existingItem -> {
+            existingItem.setName(item.getName());
+            existingItem.setQuantity(item.getQuantity());
+            existingItem.setLocation(item.getLocation());
+            return repository.save(existingItem);
+        }).orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteItem(@PathVariable Long id) {
+        repository.deleteById(id);
+    }
+}
