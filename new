@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sanitary Stock Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .form-control {
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Sanitary Stock Tracker</h1>
+
+    <div>
+        <h2>Add Item</h2>
+        <input id="itemName" class="form-control" type="text" placeholder="Item Name" />
+        <input id="itemQuantity" class="form-control" type="number" placeholder="Quantity" />
+        <input id="itemLocation" class="form-control" type="text" placeholder="Location" />
+        <button onclick="addItem()">Add Item</button>
+    </div>
+
+    <div>
+        <h2>Inventory</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Quantity</th>
+                    <th>Location</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="itemTable"></tbody>
+        </table>
+    </div>
+
+    <script>
+        const apiBaseUrl = "http://localhost:8080/api/sanitary-items";
+
+        async function fetchItems() {
+            const response = await fetch(apiBaseUrl);
+            const items = await response.json();
+            const table = document.getElementById("itemTable");
+            table.innerHTML = "";
+            items.forEach(item => {
+                const row = `<tr>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>${item.location}</td>
+                    <td>
+                        <button onclick="deleteItem(${item.id})">Delete</button>
+                    </td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+        }
+
+        async function addItem() {
+            const name = document.getElementById("itemName").value;
+            const quantity = document.getElementById("itemQuantity").value;
+            const location = document.getElementById("itemLocation").value;
+
+            await fetch(apiBaseUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, quantity, location })
+            });
+            fetchItems();
+        }
+
+        async function deleteItem(id) {
+            await fetch(`${apiBaseUrl}/${id}`, { method: "DELETE" });
+            fetchItems();
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchItems);
+    </script>
+</body>
+</html>
